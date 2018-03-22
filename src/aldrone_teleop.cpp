@@ -18,9 +18,11 @@ class AldroneTeleop
 
     private:
         bool got_first_joy_msg;
-        bool is_flying;
         bool toggle_pressed_in_last_msg;
         bool cam_toggle_pressed_in_last_msg;
+
+        bool is_flying;
+        bool dead_man_pressed;
 
         int axis_roll;
         int axis_pitch;
@@ -32,17 +34,16 @@ class AldroneTeleop
         double scale_yaw;
         double scale_z;
 
-        void joyCallBack (const sensor_msgs::Joy::ConstPtr& joy);
-
+        geometry_msgs::Twist twist;
         ros::NodeHandle nh_;
-
         ros::Publisher pub_vel;
         ros::Publisher pub_takeoff;
         ros::Publisher pub_land;
         ros::Publisher pub_toggle_state;
         ros::Subscriber sub_joy;
-
         ros::ServiceClient srv_cl_cam;
+
+        void joyCallBack (const sensor_msgs::Joy::ConstPtr& joy);
 };
 
 AldroneTeleop::AldroneTeleop()
@@ -54,32 +55,76 @@ AldroneTeleop::AldroneTeleop()
     nh_.param ("scale_roll", scale_roll, scale_roll);
     nh_.param ("scale_z", scale_z, scale_z);
 
-    sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 10, &AldroneTeleop::joyCallBack, this);
+    sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 1, &AldroneTeleop::joyCallBack, this);
     pub_vel = nh_.advertise<geometry_msgs::Twist> ("ardrone/cmd_vel",1);
 
     pub_takeoff       = nh_.advertise<std_msgs::Empty>("/ardrone/takeoff",1);
     pub_land          = nh_.advertise<std_msgs::Empty>("/ardrone/land",1);
     pub_toggle_state  = nh_.advertise<std_msgs::Empty>("/ardrone/reset",1);
     pub_vel           = nh_.advertise<geometry_msgs::Twist>("/cmd_vel",1);
-
     srv_cl_cam        = nh_.serviceClient<std_srvs::Empty>("/ardrone/togglecam",1);
+
+    twist.linear.x = twist.linear.y = twist.linear.z = 0.0;
+    twist.angular.x = twist.angular.y = twist.angular.z = 0.0;
 
     is_flying = false;
     got_first_joy_msg = false;
     toggle_pressed_in_last_msg = false;
     cam_toggle_pressed_in_last_msg = false;
+
 }
 
 
 void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
 {
-    geometry_msgs::Twist twist;
-    twist.linear.x = scale_roll * joy->axes[axis_roll];
-//    twist.linear.y = scale_pitch* joy->axes[axis_pitch];
-//    twist.linear.z = scale_yaw* joy->axes[axis_yaw];
-    twist.angular.z = scale_z * joy->axes[axis_z];
-    pub_vel.publish(twist);
+    if (!got_first_joy_msg) {
+        ROS_INFO("Found joystick with %zu buttons and %zu axes", joy->buttons.size(), joy->axes.size());
+    }
 
+
+    bool dead_man_pressed = joy->buttons.at(6);
+        ROS_INFO("L1 was pressed,");
+    bool emergency_toggle_pressed = joy->buttons.at(7);
+    bool cam_toggle_pressed = joy->buttons.at(0);
+
+    if (!is_flying && dead_man_pressed){
+        ROS_INFO("L1 was pressed, Taking off!");
+        pub_takeoff.publish(std_msgs::Empty());
+    is_flying = true;
+    }
+
+    if (is_flying && !dead_man_pressed){
+        ROS_INFO("L1 was released, landing");
+        pub_land.publish(std_msgs::Empty());
+        is_flying = false;
+    }
+
+    // toggle only once!
+    if (!toggle_pressed_in_last_msg && emergency_toggle_pressed){
+        ROS_INFO("Changing emergency status");
+        pub_toggle_state.publish(std_msgs::Empty());
+    }
+
+    toggle_pressed_in_last_msg = emergency_toggle_pressed;
+
+//    if (!cam_toggle_pressed_in_last_msg && cam_toggle_pressed){
+//        ROS_INFO("Changing Camera");
+//    if (!srv_cl_cam.call(std_srvs::Empty()))        ROS_INFO("Failed to toggle Camera");
+//    }
+
+    cam_toggle_pressed_in_last_msg = cam_toggle_pressed;
+    got_first_joy_msg = true;
+    ROS_INFO ("In AldroneTeleop::joyCallBack()");
+
+    ROS_INFO ("twist object created");
+    twist.linear.x = joy->axes[axis_roll];
+//    twist.linear.y = joy->axes[axis_pitch];
+//    twist.linear.z = joy->axes[axis_yaw];
+    twist.angular.z = joy->axes[axis_z];
+
+    ROS_INFO ("before publish twist");
+    pub_vel.publish(twist);
+    ROS_INFO ("after publish twist");
 }
 
 int main (int argc, char** argv)
@@ -92,10 +137,5 @@ int main (int argc, char** argv)
     ROS_INFO("Press and hold L2 for takeoff");
     ROS_INFO("Press 'select' to choose camera");
 
-
-        ROS_INFO("befor ros::spin()");
-        ros::spin();
-        ROS_INFO("after ros::spin()");
-
-
+    ros::spin();
 }
