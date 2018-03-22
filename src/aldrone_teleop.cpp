@@ -133,8 +133,8 @@ int main (int argc, char** argv)
     AldroneTeleop aldrone_teleop;
 
     ROS_INFO("Teleoperation Node <aldrone_teleop> started");
-    ROS_INFO("Press L1 to toggle emergency-state");
-    ROS_INFO("Press and hold L2 for takeoff");
+    ROS_INFO("Press and hold L1 for takeoff");
+    ROS_INFO("Press L2 to toggle emergency-state");
     ROS_INFO("Press 'select' to choose camera");
 
     ros::spin();
