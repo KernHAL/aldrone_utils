@@ -53,6 +53,8 @@ AldroneTeleop::AldroneTeleop()
     nh_.param<int>("axis_yaw", axis_yaw, 3);
     nh_.param<int>("axis_z", axis_z, 2);
     nh_.param<double>("scale_roll", scale_roll, 1.0);
+    nh_.param<double>("scale_pitch", scale_pitch, 1.0);
+    nh_.param<double>("scale_yaw", scale_yaw, 1.0);
     nh_.param<double>("scale_z", scale_z, 1.0);
 
     sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 10, &AldroneTeleop::joyCallBack, this);
@@ -82,7 +84,7 @@ void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
         ROS_INFO("Found joystick with %zu buttons and %zu axes", joy->buttons.size(), joy->axes.size());
     }
 
-
+//TODO: Use params for btns instaed numbers
     bool dead_man_pressed = joy->buttons.at(6);
     ROS_INFO("L1 was pressed,");
     bool emergency_toggle_pressed = joy->buttons.at(7);
@@ -117,25 +119,14 @@ void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
     got_first_joy_msg = true;
     ROS_INFO ("In AldroneTeleop::joyCallBack()");
 
-
     if (is_flying && dead_man_pressed){
-        ROS_INFO("waiting for twist:");
-        ROS_INFO("axes_roll: %d",axis_roll);
-        ROS_INFO("waiting for twist:");
-    //twist.linear.x = 1.0;
-    //twist.linear.y = 0.0;
-    //twist.linear.z = 0.0;
-    //twist.angular.z = 0.0;
         twist.linear.x = joy->axes[axis_roll];
         twist.linear.y = joy->axes[axis_pitch];
         twist.linear.z = joy->axes[axis_yaw];
         twist.angular.z = joy->axes[axis_z];
         pub_vel.publish(twist);
     }
-    ROS_INFO ("twist object created");
 
-    ROS_INFO ("before publish twist");
-    ROS_INFO ("after publish twist");
 }
 
 int main (int argc, char** argv)
