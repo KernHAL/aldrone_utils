@@ -48,14 +48,14 @@ class AldroneTeleop
 
 AldroneTeleop::AldroneTeleop()
 {
-    nh_.param ("axis_roll", axis_roll, axis_roll);
-    nh_.param ("axis_pitch", axis_pitch, axis_pitch);
-    nh_.param ("axis_yaw", axis_yaw, axis_yaw);
-    nh_.param ("axis_z", axis_z, axis_z);
-    nh_.param ("scale_roll", scale_roll, scale_roll);
-    nh_.param ("scale_z", scale_z, scale_z);
+    nh_.param<int>("axis_roll", axis_roll, 1);
+    nh_.param<int>("axis_pitch", axis_pitch, 0);
+    nh_.param<int>("axis_yaw", axis_yaw, 3);
+    nh_.param<int>("axis_z", axis_z, 2);
+    nh_.param<double>("scale_roll", scale_roll, 1.0);
+    nh_.param<double>("scale_z", scale_z, 1.0);
 
-    sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 1, &AldroneTeleop::joyCallBack, this);
+    sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 10, &AldroneTeleop::joyCallBack, this);
     pub_vel = nh_.advertise<geometry_msgs::Twist> ("ardrone/cmd_vel",1);
 
     pub_takeoff       = nh_.advertise<std_msgs::Empty>("/ardrone/takeoff",1);
@@ -72,6 +72,7 @@ AldroneTeleop::AldroneTeleop()
     toggle_pressed_in_last_msg = false;
     cam_toggle_pressed_in_last_msg = false;
 
+    ROS_INFO("Teleoperation Node <aldrone_teleop> started");
 }
 
 
@@ -83,18 +84,18 @@ void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
 
 
     bool dead_man_pressed = joy->buttons.at(6);
-        ROS_INFO("L1 was pressed,");
+    ROS_INFO("L1 was pressed,");
     bool emergency_toggle_pressed = joy->buttons.at(7);
     bool cam_toggle_pressed = joy->buttons.at(0);
 
     if (!is_flying && dead_man_pressed){
         ROS_INFO("L1 was pressed, Taking off!");
         pub_takeoff.publish(std_msgs::Empty());
-    is_flying = true;
+        is_flying = true;
     }
 
     if (is_flying && !dead_man_pressed){
-        ROS_INFO("L1 was released, landing");
+        ROS_INFO("L1 was released, Landing");
         pub_land.publish(std_msgs::Empty());
         is_flying = false;
     }
@@ -116,14 +117,24 @@ void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
     got_first_joy_msg = true;
     ROS_INFO ("In AldroneTeleop::joyCallBack()");
 
+
+    if (is_flying && dead_man_pressed){
+        ROS_INFO("waiting for twist:");
+        ROS_INFO("axes_roll: %d",axis_roll);
+        ROS_INFO("waiting for twist:");
+    //twist.linear.x = 1.0;
+    //twist.linear.y = 0.0;
+    //twist.linear.z = 0.0;
+    //twist.angular.z = 0.0;
+        twist.linear.x = joy->axes[axis_roll];
+        twist.linear.y = joy->axes[axis_pitch];
+        twist.linear.z = joy->axes[axis_yaw];
+        twist.angular.z = joy->axes[axis_z];
+        pub_vel.publish(twist);
+    }
     ROS_INFO ("twist object created");
-    twist.linear.x = joy->axes[axis_roll];
-//    twist.linear.y = joy->axes[axis_pitch];
-//    twist.linear.z = joy->axes[axis_yaw];
-    twist.angular.z = joy->axes[axis_z];
 
     ROS_INFO ("before publish twist");
-    pub_vel.publish(twist);
     ROS_INFO ("after publish twist");
 }
 
@@ -131,11 +142,17 @@ int main (int argc, char** argv)
 {
     ros::init (argc, argv, "aldrone_teleop");
     AldroneTeleop aldrone_teleop;
+    ros::NodeHandle nodeHandle;
 
     ROS_INFO("Teleoperation Node <aldrone_teleop> started");
     ROS_INFO("Press and hold L1 for takeoff");
     ROS_INFO("Press L2 to toggle emergency-state");
     ROS_INFO("Press 'select' to choose camera");
 
-    ros::spin();
+    ros::Rate spinRate(10);
+
+    while (nodeHandle.ok()) {
+        ros::spinOnce();
+        spinRate.sleep();
+    }
 }
