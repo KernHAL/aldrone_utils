@@ -35,6 +35,8 @@ class AldroneTeleop
         double scale_z;
 
         geometry_msgs::Twist twist;
+        std_srvs::Empty srv_empty;
+
         ros::NodeHandle nh_;
         ros::Publisher pub_vel;
         ros::Publisher pub_takeoff;
@@ -48,6 +50,8 @@ class AldroneTeleop
 
 AldroneTeleop::AldroneTeleop()
 {
+    //TODO: Check default values for axes
+    //TODO: Correct the naming of axes
     nh_.param<int>("axis_roll", axis_roll, 1);
     nh_.param<int>("axis_pitch", axis_pitch, 0);
     nh_.param<int>("axis_yaw", axis_yaw, 3);
@@ -78,13 +82,14 @@ AldroneTeleop::AldroneTeleop()
 }
 
 
-void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
+void
+AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
 {
     if (!got_first_joy_msg) {
         ROS_INFO("Found joystick with %zu buttons and %zu axes", joy->buttons.size(), joy->axes.size());
     }
 
-//TODO: Use params for btns instaed numbers
+    //TODO: Use params for btns instaed numbers
     bool dead_man_pressed = joy->buttons.at(6);
     ROS_INFO("L1 was pressed,");
     bool emergency_toggle_pressed = joy->buttons.at(7);
@@ -110,10 +115,13 @@ void AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
 
     toggle_pressed_in_last_msg = emergency_toggle_pressed;
 
-//    if (!cam_toggle_pressed_in_last_msg && cam_toggle_pressed){
-//        ROS_INFO("Changing Camera");
-//    if (!srv_cl_cam.call(std_srvs::Empty()))        ROS_INFO("Failed to toggle Camera");
-//    }
+    if (!cam_toggle_pressed_in_last_msg && cam_toggle_pressed){
+        ROS_INFO("Trying to Toggle Camera Source");
+    if (!srv_cl_cam.call(srv_empty))
+        ROS_INFO("Failed to toggle Camera");
+    else
+        ROS_INFO("Camera Source Toggled");
+    }
 
     cam_toggle_pressed_in_last_msg = cam_toggle_pressed;
     got_first_joy_msg = true;
@@ -140,6 +148,7 @@ int main (int argc, char** argv)
     ROS_INFO("Press L2 to toggle emergency-state");
     ROS_INFO("Press 'select' to choose camera");
 
+    //TODO: Define spinRate as global constant
     ros::Rate spinRate(10);
 
     while (nodeHandle.ok()) {
