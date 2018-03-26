@@ -13,7 +13,7 @@
         <!-- Configures the joystick button mapping -->
         <param name="btn_emergency"        type="int"     value="0" />
         <param name="btn_land"             type="int"     value="1" />
-        <param name="btn_takeoff"          type="int"     value="8" />
+        <param name="btn_takeoff"          type="int"     value="6" />
 
         <!-- Configures the joystick axes mapping -->
         <param name="axis_x"               type="int"     value="0" />
