@@ -4,7 +4,7 @@
 
     <!-- Joy Node -->
         <node name="joy_node" pkg="joy" type="joy_node" output="screen" respawn="true" clear_params="true">
-        <param name="dev" type="string" value="/dev/input/js0"/>
+        <param name="dev" type="string" value="/dev/input/js1"/>
     </node>
 
     <!-- Launches the joystick controller -->
@@ -13,19 +13,19 @@
         <!-- Configures the joystick button mapping -->
         <param name="btn_emergency"        type="int"     value="0" />
         <param name="btn_land"             type="int"     value="1" />
-        <param name="btn_takeoff"          type="int"     value="2" />
+        <param name="btn_takeoff"          type="int"     value="8" />
 
         <!-- Configures the joystick axes mapping -->
-        <param name="axis_roll"               type="int"     value="0" />
-        <param name="axis_pitch"              type="int"     value="1" />
-        <param name="axis_yaw"                type="int"     value="2" />
-        <param name="axis_z"                  type="int"     value="3" />
+        <param name="axis_x"               type="int"     value="0" />
+        <param name="axis_y"              type="int"     value="1" />
+        <param name="axis_z"                type="int"     value="3" />
+        <param name="axis_yaw"                  type="int"     value="2" />
         
         <!-- Configures the joystick scales -->
-        <param name="scale_roll"              type="double"     value="1.0" />
-        <param name="scale_pitch"             type="double"     value="1.0" />
-        <param name="scale_yaw"               type="double"     value="1.0" />
-        <param name="scale_z"                 type="double"     value="1.0" />
+        <param name="scale_x"              type="double"     value="1.0" />
+        <param name="scale_y"             type="double"     value="1.0" />
+        <param name="scale_z"               type="double"     value="1.0" />
+        <param name="scale_yaw"                 type="double"     value="1.0" />
 
     </node>
 </launch>
