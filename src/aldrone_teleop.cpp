@@ -12,14 +12,15 @@ AldroneTeleop::AldroneTeleop()
 {
     //TODO: Check default values for axes
     //TODO: Correct the naming of axes
-    nh_.param<int>("axis_roll", axis_roll, 1);
-    nh_.param<int>("axis_pitch", axis_pitch, 0);
-    nh_.param<int>("axis_yaw", axis_yaw, 3);
-    nh_.param<int>("axis_z", axis_z, 2);
-    nh_.param<double>("scale_roll", scale_roll, 1.0);
-    nh_.param<double>("scale_pitch", scale_pitch, 1.0);
-    nh_.param<double>("scale_yaw", scale_yaw, 1.0);
+
+    nh_.param<int>("axis_x", axis_x, 1);
+    nh_.param<int>("axis_y", axis_y, 0);
+    nh_.param<int>("axis_z", axis_z, 3);
+    nh_.param<int>("axis_yaw", axis_yaw, 2);
+    nh_.param<double>("scale_x", scale_x, 1.0);
+    nh_.param<double>("scale_y", scale_y, 1.0);
     nh_.param<double>("scale_z", scale_z, 1.0);
+    nh_.param<double>("scale_yaw", scale_yaw, 1.0);
 
     sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 10, &AldroneTeleop::joyCallBack, this);
     pub_vel = nh_.advertise<geometry_msgs::Twist> ("ardrone/cmd_vel",1);
@@ -53,7 +54,7 @@ AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
     bool dead_man_pressed = joy->buttons.at(6);
     ROS_INFO("L1 was pressed,");
     bool emergency_toggle_pressed = joy->buttons.at(7);
-    bool cam_toggle_pressed = joy->buttons.at(0);
+    bool cam_toggle_pressed = joy->buttons.at(8);
 
     if (!is_flying && dead_man_pressed){
         ROS_INFO("L1 was pressed, Taking off!");
@@ -88,10 +89,10 @@ AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
     ROS_INFO ("In AldroneTeleop::joyCallBack()");
 
     if (is_flying && dead_man_pressed){
-        twist.linear.x = joy->axes[axis_roll];
-        twist.linear.y = joy->axes[axis_pitch];
-        twist.linear.z = joy->axes[axis_yaw];
-        twist.angular.z = joy->axes[axis_z];
+        twist.linear.x = joy->axes[axis_x];
+        twist.linear.y = joy->axes[axis_y];
+        twist.linear.z = joy->axes[axis_z];
+        twist.angular.z = joy->axes[axis_yaw];
         pub_vel.publish(twist);
     }
 
