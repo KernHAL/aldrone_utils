@@ -10,8 +10,8 @@
 
 AldroneTeleop::AldroneTeleop()
 {
-    //TODO: Check default values for axes
-    //TODO: Correct the naming of axes
+
+//TODO: use ros::ServiceClient serviceflattrim
 
     nh_.param<int>("axis_x", axis_x, 1);
     nh_.param<int>("axis_y", axis_y, 0);
@@ -50,11 +50,15 @@ AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
         ROS_INFO("Found joystick with %zu buttons and %zu axes", joy->buttons.size(), joy->axes.size());
     }
 
+    got_first_joy_msg = true;
+    ROS_INFO ("In AldroneTeleop::joyCallBack()");
+
     //TODO: Use params for btns instaed numbers
     bool dead_man_pressed = joy->buttons.at(6);
     ROS_INFO("L1 was pressed,");
     bool emergency_toggle_pressed = joy->buttons.at(7);
     bool cam_toggle_pressed = joy->buttons.at(8);
+    ROS_INFO("Btn#8  was pressed,");
 
     if (!is_flying && dead_man_pressed){
         ROS_INFO("L1 was pressed, Taking off!");
@@ -83,10 +87,8 @@ AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
     else
         ROS_INFO("Camera Source Toggled");
     }
-
     cam_toggle_pressed_in_last_msg = cam_toggle_pressed;
-    got_first_joy_msg = true;
-    ROS_INFO ("In AldroneTeleop::joyCallBack()");
+
 
     if (is_flying && dead_man_pressed){
         twist.linear.x = joy->axes[axis_x];
@@ -109,7 +111,6 @@ int main (int argc, char** argv)
     ROS_INFO("Press L2 to toggle emergency-state");
     ROS_INFO("Press 'select' to choose camera");
 
-    //TODO: Define spinRate as global constant
     ros::Rate spinRate(SPIN_RATE);
 
     while (nodeHandle.ok()) {
