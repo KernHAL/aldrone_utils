@@ -31,15 +31,19 @@ class AldroneTeleop
         bool is_flying;
         bool dead_man_pressed;
 
-        int axis_roll;
-        int axis_pitch;
-        int axis_yaw;
+        int axis_x;
+        int axis_y;
         int axis_z;
+        int axis_yaw;
 
-        double scale_roll;
-        double scale_pitch;
-        double scale_yaw;
+        double scale_x;
+        double scale_y;
         double scale_z;
+        double scale_yaw;
+
+        int btn_dead_man;
+        int btn_emergency;
+        int btn_cam_toggle;
 
         geometry_msgs::Twist twist;
         std_srvs::Empty srv_empty;

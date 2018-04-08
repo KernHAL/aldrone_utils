@@ -21,6 +21,9 @@ AldroneTeleop::AldroneTeleop()
     nh_.param<double>("scale_y", scale_y, 1.0);
     nh_.param<double>("scale_z", scale_z, 1.0);
     nh_.param<double>("scale_yaw", scale_yaw, 1.0);
+    nh_.param<int>("btn_dead_man", btn_dead_man, 6);
+    nh_.param<int>("btn_emergency", btn_emergency, 7);
+    nh_.param<int>("btn_cam_toggle", btn_cam_toggle, 8);
 
     sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 10, &AldroneTeleop::joyCallBack, this);
     pub_vel = nh_.advertise<geometry_msgs::Twist> ("ardrone/cmd_vel",1);
@@ -54,10 +57,10 @@ AldroneTeleop::joyCallBack (const sensor_msgs::Joy::ConstPtr& joy)
     ROS_INFO ("In AldroneTeleop::joyCallBack()");
 
     //TODO: Use params for btns instaed numbers
-    bool dead_man_pressed = joy->buttons.at(6);
+    bool dead_man_pressed = joy->buttons.at(btn_dead_man);
     ROS_INFO("L1 was pressed,");
-    bool emergency_toggle_pressed = joy->buttons.at(7);
-    bool cam_toggle_pressed = joy->buttons.at(8);
+    bool emergency_toggle_pressed = joy->buttons.at(btn_emergency);
+    bool cam_toggle_pressed = joy->buttons.at(btn_cam_toggle);
     ROS_INFO("Btn#8  was pressed,");
 
     if (!is_flying && dead_man_pressed){
