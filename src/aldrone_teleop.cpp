@@ -21,9 +21,9 @@ AldroneTeleop::AldroneTeleop()
     nh_.param<double>("scale_y", scale_y, 1.0);
     nh_.param<double>("scale_z", scale_z, 1.0);
     nh_.param<double>("scale_yaw", scale_yaw, 1.0);
-    nh_.param<int>("btn_dead_man", btn_dead_man, 6);
-    nh_.param<int>("btn_emergency", btn_emergency, 7);
-    nh_.param<int>("btn_cam_toggle", btn_cam_toggle, 8);
+    nh_.param<int>("btn_dead_man", btn_dead_man, 6);        // button L1
+    nh_.param<int>("btn_emergency", btn_emergency, 7);      // button R1
+    nh_.param<int>("btn_cam_toggle", btn_cam_toggle, 8);    // button Select
 
     sub_joy = nh_.subscribe<sensor_msgs::Joy> ("joy", 10, &AldroneTeleop::joyCallBack, this);
     pub_vel = nh_.advertise<geometry_msgs::Twist> ("ardrone/cmd_vel",1);
@@ -111,7 +111,7 @@ int main (int argc, char** argv)
 
     ROS_INFO("Teleoperation Node <aldrone_teleop> started");
     ROS_INFO("Press and hold L1 for takeoff");
-    ROS_INFO("Press L2 to toggle emergency-state");
+    ROS_INFO("Press R1 to toggle emergency-state");
     ROS_INFO("Press 'select' to choose camera");
 
     ros::Rate spinRate(SPIN_RATE);
