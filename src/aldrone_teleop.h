@@ -16,11 +16,10 @@
 #include <std_msgs/Empty.h>
 #include <std_srvs/Empty.h>
 
-#define SPIN_RATE 10
-
 class AldroneTeleop {
  public:
   AldroneTeleop();
+  static const int  kSpinRate = 10;
 
  private:
   bool got_first_joy_msg;
@@ -55,7 +54,7 @@ class AldroneTeleop {
   ros::Subscriber sub_joy;
   ros::ServiceClient srv_cl_cam;
 
-  void joyCallBack(const sensor_msgs::Joy::ConstPtr& joy);
+  void JoyCallBack(const sensor_msgs::Joy::ConstPtr& joy);
 };
 
 #endif /* __ALDRONE_TELEOP_H */
